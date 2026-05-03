@@ -85,8 +85,8 @@ router.post('/register', async (req, res) => {
     const title = isAdmin ? 'Legendary Awakening' : 'Sea Rookie'
 
     const result = await query(
-      `INSERT INTO users (email, password_hash, username, role, gear, email_verify_token, email_verify_expires, email_verified)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      `INSERT INTO users (email, password_hash, username, role, gear, title, email_verify_token, email_verify_expires, email_verified)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        RETURNING id, email, role, gear, username`,
       [email.toLowerCase(), passwordHash, username || email.split('@')[0], role, gear, title, verifyToken, verifyExpires, isAdmin]
     );
