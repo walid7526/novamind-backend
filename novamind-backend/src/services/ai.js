@@ -1,16 +1,28 @@
 const OpenAI = require('openai')
 
 // ==============================
-// CLIENT OPENROUTER — UNE SEULE CLÉ POUR TOUT
+// CLIENT OPENROUTER — initialisation lazy
 // ==============================
-const openrouter = new OpenAI({
-  apiKey: process.env.OPENROUTER_API_KEY,
-  baseURL: 'https://openrouter.ai/api/v1',
-  defaultHeaders: {
-    'HTTP-Referer': 'https://novamind.ai',
-    'X-Title': 'NovaMind',
-  },
-})
+let _openrouter = null
+const openrouter = {
+  chat: {
+    completions: {
+      create: async (params) => {
+        if (!_openrouter) {
+          _openrouter = new OpenAI({
+            apiKey: process.env.OPENROUTER_API_KEY,
+            baseURL: 'https://openrouter.ai/api/v1',
+            defaultHeaders: {
+              'HTTP-Referer': 'https://novamind.ai',
+              'X-Title': 'NovaMind',
+            },
+          })
+        }
+        return _openrouter.chat.completions.create(params)
+      }
+    }
+  }
+}
 
 // ==============================
 // CONFIG DES MODÈLES PAR GEAR
