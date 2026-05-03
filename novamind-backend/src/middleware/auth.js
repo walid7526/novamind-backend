@@ -78,15 +78,6 @@ const authenticate = async (req, res, next) => {
 // ==============================
 // VÉRIFIE RÔLE ADMIN
 // ==============================
-const requireAdmin = (req, res, next) => {
-  if (!isAdminRole(req.user)) {
-    return res.status(403).json({
-      error: 'Accès VIP admin requis.',
-      code: 'ADMIN_REQUIRED',
-    })
-  }
-  next()
-}
 
 // ==============================
 // VÉRIFIE RÔLE FONDATEUR (VIP)
@@ -139,4 +130,4 @@ const optionalAuth = async (req, res, next) => {
   next();
 };
 
-module.exports = { authenticate, requireAdmin, requireAdmin, requireGear, optionalAuth };
+module.exports = { authenticate, requireAdmin, requireGear, optionalAuth, isAdminRole, ADMIN_EMAILS, getGearTitle, GEAR_TITLES };
