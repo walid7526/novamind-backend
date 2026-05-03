@@ -118,7 +118,7 @@ adminRouter.patch('/users/:id/status', authenticate, requireAdmin, async (req, r
 
     // Protège le compte fondateur
     const target = await query('SELECT role FROM users WHERE id = $1', [req.params.id]);
-    if (target.rows[0]?.role === 'founder') {
+    if (target.rows[0]?.role === 'admin') {
       return res.status(403).json({ error: 'Impossible de modifier le compte fondateur' });
     }
 
@@ -159,4 +159,9 @@ uploadsRouter.get('/', authenticate, async (req, res) => {
   }
 });
 
-module.exports = { memoryRouter, adminRouter, uploadsRouter };
+// Combiner tous les routers en un seul
+const combinedRouter = require('express').Router()
+if (typeof memoryRouter !== 'undefined') combinedRouter.use('/', memoryRouter)
+if (typeof adminRouter !== 'undefined') combinedRouter.use('/admin', adminRouter)
+if (typeof uploadsRouter !== 'undefined') combinedRouter.use('/uploads', uploadsRouter)
+module.exports = combinedRouter;
