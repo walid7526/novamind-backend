@@ -8,7 +8,13 @@ const OpenAI = require('openai')
 const { query } = require('../config/database')
 const { authenticate } = require('../middleware/auth')
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+let _openai = null
+const getOpenAI = () => {
+  if (!_openai) {
+    const { default: OpenAI } = require("openai")
+    _openai = new OpenAI({ apiKey: process.env.OPENROUTER_API_KEY, baseURL: "https://openrouter.ai/api/v1" })
+  }
+  return _openai}
 
 // ==============================
 // CONFIG MULTER
@@ -64,7 +70,7 @@ const UPLOAD_LIMITS = { 1: 3, 2: 10, 3: 30, 4: 100 } // Gear 5 : pas de limite f
 // ==============================
 const transcribeAudio = async (audioPath) => {
   const audioStream = fs.createReadStream(audioPath)
-  const response = await openai.audio.transcriptions.create({
+  const response = await getOpenAI().audio.transcriptions.create({
     file: audioStream,
     model: 'whisper-1',
     language: 'fr',
@@ -109,7 +115,7 @@ const processVideo = async (videoPath) => {
         }
       })
 
-      const visionResponse = await openai.chat.completions.create({
+      const visionResponse = await getOpenAI().chat.completions.create({
         model: 'gpt-4o',
         messages: [{
           role: 'user',
@@ -209,7 +215,7 @@ router.post('/analyze', authenticate, upload.single('file'), async (req, res) =>
       fileType = 'image'
       const base64 = fs.readFileSync(file.path).toString('base64')
       const userQuestion = question?.trim() || 'Décris cette image en détail.'
-      const response = await openai.chat.completions.create({
+      const response = await getOpenAI().chat.completions.create({
         model: 'gpt-4o',
         messages: [{
           role: 'user',
@@ -233,7 +239,7 @@ router.post('/analyze', authenticate, upload.single('file'), async (req, res) =>
       transcriptText = await transcribeAudio(file.path)
 
       // Analyse du contenu transcrit
-      const response = await openai.chat.completions.create({
+      const response = await getOpenAI().chat.completions.create({
         model: 'gpt-4o',
         messages: [{
           role: 'user',
@@ -259,7 +265,7 @@ router.post('/analyze', authenticate, upload.single('file'), async (req, res) =>
       if (transcript) videoContext += `📝 Transcription audio :\n${transcript}\n\n`
       if (frameDescriptions) videoContext += `🎬 Contenu visuel :\n${frameDescriptions}\n\n`
 
-      const response = await openai.chat.completions.create({
+      const response = await getOpenAI().chat.completions.create({
         model: 'gpt-4o',
         messages: [{
           role: 'user',
@@ -282,7 +288,7 @@ router.post('/analyze', authenticate, upload.single('file'), async (req, res) =>
       } catch {
         textContent = `[Fichier: ${file.originalname}]`
       }
-      const response = await openai.chat.completions.create({
+      const response = await getOpenAI().chat.completions.create({
         model: 'gpt-4o',
         messages: [{
           role: 'user',
