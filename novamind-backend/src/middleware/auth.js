@@ -95,11 +95,10 @@ router.post('/register', async (req, res) => {
 
     // Envoie email de vérification (sauf administrateur)
     if (!isAdmin) {
-      await sendEmail({
+      await sendWelcomeEmail({
         to: email,
-        subject: '✉️ Vérifiez votre compte NovaMind',
-        template: 'verify-email',
-        data: { username: user.username, token: verifyToken, url: `${process.env.FRONTEND_URL}/verify-email?token=${verifyToken}` },
+        username: user.username,
+        verifyUrl: `${process.env.FRONTEND_URL}/verify-email?token=${verifyToken}`,
       }).catch(console.error);
     }
 
@@ -295,11 +294,10 @@ router.post('/forgot-password', async (req, res) => {
       [resetToken, resetExpires, user.id]
     );
 
-    await sendEmail({
+    await sendResetPasswordEmail({
       to: email,
-      subject: '🔑 Réinitialisation de votre mot de passe NovaMind',
-      template: 'reset-password',
-      data: { username: user.username, url: `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}` },
+      username: user.username,
+      resetUrl: `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`,
     }).catch(console.error);
 
     await logSecurityEvent(user.id, 'PASSWORD_RESET_REQUEST', req);
